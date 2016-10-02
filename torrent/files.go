@@ -3,6 +3,7 @@ package torrent
 import (
 	"errors"
 	"io"
+	"os"
 )
 
 // Interface for a file.
@@ -59,6 +60,7 @@ func NewFileStore(info *InfoDict, fileSystem FileSystem) (f FileStore, totalSize
 	for i, _ := range info.Files {
 		src := &info.Files[i]
 		var file File
+		os.Chdir("../")
 		file, err = fs.fileSystem.Open(src.Path, src.Length)
 		if err != nil {
 			// Close all files opened up to now.

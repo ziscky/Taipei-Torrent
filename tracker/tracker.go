@@ -374,6 +374,7 @@ func NewTrackerTorrents() trackerTorrents {
 }
 
 func (t trackerTorrents) handleAnnounce(now time.Time, peerListenAddress *net.TCPAddr, params *announceParams, response bmap) (err error) {
+	//TODO: refresh tracker torrent list
 	if tt, ok := t[params.infoHash]; ok {
 		err = tt.handleAnnounce(now, peerListenAddress, params, response)
 	} else {

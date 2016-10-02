@@ -263,15 +263,24 @@ func CreateMetaInfoFromFileSystem(fs MetaInfoFileSystem, root, tracker string, p
 		for i := range m.Info.Files {
 			totalLength += m.Info.Files[i].Length
 		}
+		hash := md5.New()
 		if wantMD5Sum {
-			for i := range m.Info.Files {
-				fd := &m.Info.Files[i]
-				fd.Md5sum, err = md5Sum(fs, path.Join(fd.Path...))
+			for _, i := range m.Info.Files {
+				fd := &i
+				var f MetaInfoFile
+				f, err = fs.Open(path.Join(fd.Path...))
 				if err != nil {
 					return
 				}
+				defer f.Close()
+				_, err = io.Copy(hash, f)
+				// fd.Md5sum, err = md5Sum(fs, path.Join(fd.Path...))
+				// if err != nil {
+				// 	return
+				// }
 			}
 		}
+		m.Info.Md5sum = string(hash.Sum(nil))
 	} else {
 		m.Info.Name = path.Base(root)
 		totalLength = fileInfo.Size()
@@ -308,6 +317,10 @@ func CreateMetaInfoFromFileSystem(fs MetaInfoFileSystem, root, tracker string, p
 	if tracker != "" {
 		m.Announce = "http://" + tracker + "/announce"
 	}
+	m.Info.Name = path.Base(root)
+	fmt.Println("INFO", m.Info.Length, m.Info.Md5sum)
+	m.Info.Length = totalLength
+
 	metaInfo = m
 	return
 }
@@ -518,12 +531,12 @@ type TrackerResponse struct {
 }
 
 type SessionInfo struct {
-	PeerID     string
-	Port       uint16
+	PeerID       string
+	Port         uint16
 	OurAddresses map[string]bool //List of addresses that resolve to ourselves.
-	Uploaded   uint64
-	Downloaded uint64
-	Left       uint64
+	Uploaded     uint64
+	Downloaded   uint64
+	Left         uint64
 
 	UseDHT      bool
 	FromMagnet  bool
