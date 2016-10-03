@@ -343,6 +343,14 @@ func (t *Tracker) Quit() (err error) {
 	return
 }
 
+func (t *Tracker) Exists(infoHash string) bool {
+	t.m.Lock()
+	defer t.m.Unlock()
+	_, ok := t.t[infoHash]
+	return ok
+
+}
+
 func (t *Tracker) Register(infoHash, name string) (err error) {
 	log.Printf("Register(%#v,%#v)", infoHash, name)
 	t.m.Lock()
