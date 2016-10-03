@@ -15,7 +15,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/jackpal/Taipei-Torrent/torrent"
+	"github.com/ziscky/Taipei-Torrent/torrent"
 )
 
 func TestScrapeURL(t *testing.T) {
@@ -420,7 +420,8 @@ func testHelperProcessImp(args []string) (err error) {
 			Cacher:             torrent.NewRamCacheProvider(1),
 			MemoryPerTorrent:   4,
 		}
-		err = torrent.RunTorrents(&torrentFlags, torrentFiles)
+		stopChan := make(chan struct{})
+		err = torrent.RunTorrents(&torrentFlags, torrentFiles, stopChan)
 		if err != nil {
 			return
 		}
