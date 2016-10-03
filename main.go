@@ -12,8 +12,8 @@ import (
 	"runtime/pprof"
 	"time"
 
-	"github.com/jackpal/Taipei-Torrent/torrent"
-	"github.com/jackpal/Taipei-Torrent/tracker"
+	"github.com/ziscky/Taipei-Torrent/torrent"
+	"github.com/ziscky/Taipei-Torrent/tracker"
 	"golang.org/x/net/proxy"
 )
 
@@ -167,8 +167,8 @@ func main() {
 	}
 
 	log.Println("Starting.")
-
-	err = torrent.RunTorrents(torrentFlags, args)
+	stopChan := make(chan struct{})
+	err = torrent.RunTorrents(torrentFlags, args, stopChan)
 	if err != nil {
 		log.Fatal("Could not run torrents", args, err)
 	}
