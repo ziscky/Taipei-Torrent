@@ -657,14 +657,9 @@ func (ts *TorrentSession) DoTorrent() {
 				log.Println("[", ts.M.Info.Name, "] Contacting", newPeerCount, "new peers")
 			}
 
+			//rely on tracker provided interval
 			interval := ts.ti.Interval
-			minInterval := uint(120)
-			maxInterval := uint(24 * 3600)
-			if interval < minInterval {
-				interval = minInterval
-			} else if interval > maxInterval {
-				interval = maxInterval
-			}
+
 			log.Println("[", ts.M.Info.Name, "] ..checking again in", interval, "seconds")
 			retrackerChan = time.Tick(time.Duration(interval) * time.Second)
 
