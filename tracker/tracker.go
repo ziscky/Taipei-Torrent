@@ -16,18 +16,20 @@ import (
 	"sync"
 	"time"
 
-	"github.com/jackpal/Taipei-Torrent/torrent"
 	bencode "github.com/jackpal/bencode-go"
+	"github.com/ziscky/Taipei-Torrent/torrent"
 )
 
 type Tracker struct {
-	Announce string
-	Addr     string
-	ID       string
-	done     chan struct{}
-	m        sync.Mutex // Protects l and t
-	l        net.Listener
-	t        trackerTorrents
+	Announce       string
+	Addr           string
+	ID             string
+	Interval       int64
+	CheckTrackerID bool
+	done           chan struct{}
+	m              sync.Mutex // Protects l and t
+	l              net.Listener
+	t              trackerTorrents
 }
 
 type trackerTorrents map[string]*trackerTorrent
@@ -214,7 +216,7 @@ func listenSigInt() chan os.Signal {
 }
 
 func NewTracker() *Tracker {
-	return &Tracker{Announce: "/announce", t: NewTrackerTorrents()}
+	return &Tracker{Announce: "/announce", t: NewTrackerTorrents(), Interval: int64(30)}
 }
 
 func (t *Tracker) ListenAndServe() (err error) {
@@ -280,8 +282,10 @@ func (t *Tracker) handleAnnounce(w http.ResponseWriter, r *http.Request) {
 	var peerListenAddress *net.TCPAddr
 	err := params.parse(r.URL)
 	if err == nil {
-		if params.trackerID != "" && params.trackerID != t.ID {
-			err = fmt.Errorf("Incorrect tracker ID: %#v", params.trackerID)
+		if t.CheckTrackerID {
+			if params.trackerID != "" && params.trackerID != t.ID {
+				err = fmt.Errorf("Incorrect tracker ID: %#v", params.trackerID)
+			}
 		}
 	}
 	if err == nil {
@@ -293,7 +297,7 @@ func (t *Tracker) handleAnnounce(w http.ResponseWriter, r *http.Request) {
 		err = t.t.handleAnnounce(now, peerListenAddress, &params, response)
 		t.m.Unlock()
 		if err == nil {
-			response["interval"] = int64(30 * 60)
+			response["interval"] = t.Interval //int64(30 * 60)
 			response["tracker id"] = t.ID
 		}
 	}
@@ -468,8 +472,8 @@ func (t *trackerTorrent) handleAnnounce(now time.Time, peerListenAddress *net.TC
 	}
 
 	completeCount, incompleteCount := t.countPeers()
-	response["complete"] = completeCount
-	response["incomplete"] = incompleteCount
+	response["complete"] = completeCount     //seeders
+	response["incomplete"] = incompleteCount //leechers
 
 	peerCount := len(t.peers)
 	numWant := params.numWant
