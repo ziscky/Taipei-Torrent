@@ -32,6 +32,35 @@ type Tracker struct {
 	t              trackerTorrents
 }
 
+//IntrospectOne gets the info for a tracked torrent  given the infohash
+func (t *Tracker) IntrospectOne(infoHash string) map[string]interface{} {
+	if _, ok := t.t[infoHash]; !ok {
+		return nil
+	}
+	d := make(map[string]interface{})
+	info := t.t[infoHash].scrape()
+	d["infoHash"] = infoHash
+	d["name"] = info["name"]
+	d["complete"] = info["complete"]
+	d["incomplete"] = info["incomplete"]
+	d["downloaded"] = info["downloaded"]
+	return d
+
+}
+
+//IntrospectAll returns a list of all relevant info for all tracked torrents
+func (t *Tracker) IntrospectAll() []map[string]interface{} {
+	//k -> InfoHash
+	//v -> torrent
+	var data []map[string]interface{}
+	for k := range t.t {
+		d := t.IntrospectOne(k)
+		data = append(data, d)
+	}
+	return data
+
+}
+
 type trackerTorrents map[string]*trackerTorrent
 
 // Single-threaded imp
