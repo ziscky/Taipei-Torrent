@@ -48,7 +48,7 @@ type TorrentFlags struct {
 	MemoryPerTorrent int
 }
 
-func RunTorrents(flags *TorrentFlags, torrentFiles []string, quitChan chan struct{}) (err error) {
+func RunTorrents(flags *TorrentFlags, torrentFiles []string, quitChan chan struct{}, introspectionChan chan int) (err error) {
 	conChan, listenPort, err := ListenForPeerConnections(flags)
 	if err != nil {
 		log.Println("Couldn't listen for peers connection: ", err)
@@ -70,6 +70,7 @@ func RunTorrents(flags *TorrentFlags, torrentFiles []string, quitChan chan struc
 	go func() {
 		for torrentFile := range createChan {
 			ts, err := NewTorrentSession(flags, torrentFile, uint16(listenPort))
+			ts.introspectionChan = introspectionChan
 			if err != nil {
 				log.Println("Couldn't create torrent session for "+torrentFile+" .", err)
 				doneChan <- &TorrentSession{}

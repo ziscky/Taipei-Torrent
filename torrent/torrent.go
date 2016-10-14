@@ -124,6 +124,7 @@ type TorrentSession struct {
 	fileStore            FileStore
 	trackerReportChan    chan ClientStatusReport
 	trackerInfoChan      chan *TrackerResponse
+	introspectionChan    chan int
 	hintNewPeerChan      chan string
 	addPeerChan          chan *BtConn
 	peers                map[string]*peerState
@@ -654,6 +655,10 @@ func (ts *TorrentSession) DoTorrent() {
 						}
 					}
 				}
+				if ts.introspectionChan != nil {
+					ts.introspectionChan <- newPeerCount
+				}
+
 				log.Println("[", ts.M.Info.Name, "] Contacting", newPeerCount, "new peers")
 			}
 
