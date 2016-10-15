@@ -318,7 +318,6 @@ func CreateMetaInfoFromFileSystem(fs MetaInfoFileSystem, root, tracker string, p
 		m.Announce = "http://" + tracker + "/announce"
 	}
 	m.Info.Name = path.Base(root)
-	fmt.Println("INFO", m.Info.Length, m.Info.Md5sum)
 	m.Info.Length = totalLength
 
 	metaInfo = m

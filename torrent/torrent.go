@@ -234,7 +234,6 @@ func (ts *TorrentSession) load() (err error) {
 		torrentName = path.Clean("/" + torrentName)
 		dir += torrentName
 
-		fmt.Println("SEE", dir)
 		//Remove ".torrent" extension if present
 		if strings.HasSuffix(strings.ToLower(dir), ext) {
 			dir = dir[:len(dir)-len(ext)]
